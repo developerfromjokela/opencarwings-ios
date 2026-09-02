@@ -423,6 +423,19 @@ struct MainView: View {
             pendingCmdType = type
             pendingCmdOutside = outside
             pendingCmdArgs = args
+            
+            // Check if Biometric Authentication is enabled and available
+            if accountInfo?.isCommandPinSet == true && BiometricAuthManager.shared.isBiometricsEnabled && BiometricAuthManager.shared.hasStoredPin {
+                let (success, pin, _) = await BiometricAuthManager.shared.authenticateAndGetPin(reason: "Authorize sensitive command")
+                if success, let pin {
+                    await sendTCUCommandImpl(type, outside: outside, args: args, commandPin: pin)
+                    pendingCmdType = 0
+                    pendingCmdOutside = false
+                    pendingCmdArgs = nil
+                    return
+                }
+            }
+            
             showPinPrompt = accountInfo?.isCommandPinSet == true
             showSetupPinPrompt = !showPinPrompt
             return

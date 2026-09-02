@@ -2063,6 +2063,9 @@
         }
       }
     },
+    "Save PIN for %@" : {
+
+    },
     "Search for a place" : {
       "localizations" : {
         "es" : {
@@ -2607,7 +2610,9 @@
             "value" : "Avaa auton lukitus"
           }
         }
-      }
+      },
+    "Use %@" : {
+
     },
     "Username" : {
       "localizations" : {
