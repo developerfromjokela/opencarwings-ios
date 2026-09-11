@@ -15,8 +15,7 @@ struct OpenCARWINGSApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView().onAppear {
-                // Optional: update when view appears
+            ContentView().dynamicTypeSize(.xSmall ... .accessibility1).onAppear {
                 updateWidgets()
             }
         }.onChange(of: scenePhase) { newPhase in
