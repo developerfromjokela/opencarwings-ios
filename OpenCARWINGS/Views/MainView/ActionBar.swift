@@ -21,25 +21,51 @@ struct ActionBar: View {
     @State private var rotationAngle = 0.0
     @State private var acTemp: Int = 21
 
-    
-    var sendCommand: (Int, Bool, [String:AnyJSON]?) async -> Void
-    
+    var sendCommand: (Int, Bool, [String: AnyJSON]?) async -> Void
     @Binding var car: Car?
+
     var body: some View {
-        HStack(spacing: 10) {
-            if (car?.supportedCommands?.contains(7) == true) {
-                Button(action: {
+        ViewThatFits(in: .horizontal) {
+            // Preferred size
+            buttonRow(buttonSize: 50, spacing: 10)
+
+            // Slightly smaller
+            buttonRow(buttonSize: 46, spacing: 8)
+
+            // Smaller still
+            buttonRow(buttonSize: 42, spacing: 6)
+
+            // Compact fallback
+            buttonRow(buttonSize: 38, spacing: 5)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical)
+        .frame(maxWidth: .infinity)
+        .foregroundColor(.primary)
+        .onChange(of: car?.evInfo.isAcStatus) { _, newValue in
+            if newValue != true {
+                isFanSpin = false
+            }
+        }
+    }
+
+    // MARK: - Button Row
+
+    @ViewBuilder
+    private func buttonRow(buttonSize: CGFloat, spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            // Unlock
+            if car?.supportedCommands?.contains(7) == true {
+                actionButton(
+                    systemName: "lock.open.fill",
+                    isLoading: car?.isCommandRequested == true && car?.commandType == 7,
+                    background: .gray,
+                    size: buttonSize
+                ) {
                     showUnlockPopup = true
-                }) {
-                    if car?.isCommandRequested == true && car?.commandType == 7 {
-                        ProgressView().progressViewStyle(CircularProgressViewStyle()).frame(width: 50, height: 50)
-                    } else {
-                        Image(systemName: "lock.open.fill")
-                            .font(.system(size: 24))
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.white)
-                    }
-                }.background(Color.gray).cornerRadius(25).disabled(car?.isCommandRequested == true).alert(isPresented: $showUnlockPopup) {
+                }
+                .disabled(car?.isCommandRequested == true)
+                .alert(isPresented: $showUnlockPopup) {
                     Alert(
                         title: Text("Unlock Car"),
                         message: Text("Are you sure?"),
@@ -53,19 +79,19 @@ struct ActionBar: View {
                     )
                 }
             }
-            if (car?.supportedCommands?.contains(8) == true) {
-                Button(action: {
+
+            // Lock
+            if car?.supportedCommands?.contains(8) == true {
+                actionButton(
+                    systemName: "lock.fill",
+                    isLoading: car?.isCommandRequested == true && car?.commandType == 8,
+                    background: .gray,
+                    size: buttonSize
+                ) {
                     showLockPopup = true
-                }) {
-                    if car?.isCommandRequested == true && car?.commandType == 8 {
-                        ProgressView().progressViewStyle(CircularProgressViewStyle()).frame(width: 50, height: 50)
-                    } else {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 24))
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.white)
-                    }
-                }.background(Color.gray).cornerRadius(25).disabled(car?.isCommandRequested == true).alert(isPresented: $showLockPopup) {
+                }
+                .disabled(car?.isCommandRequested == true)
+                .alert(isPresented: $showLockPopup) {
                     Alert(
                         title: Text("Lock Car"),
                         message: Text("Are you sure?"),
@@ -79,22 +105,22 @@ struct ActionBar: View {
                     )
                 }
             }
-            Button(action: {
-                if (car?.supportedCommands?.contains(6) == true) {
+
+            // Charge
+            actionButton(
+                systemName: "bolt.fill",
+                isLoading: car?.isCommandRequested == true && (car?.commandType == 2 || car?.commandType == 6),
+                background: (car?.evInfo.isCharging == true || car?.evInfo.isQuickCharging == true) ? Color.accentColor : .gray,
+                size: buttonSize
+            ) {
+                if car?.supportedCommands?.contains(6) == true {
                     showChargeOptsPopup = true
-                    return
-                }
-                showChargePopup = true
-            }) {
-                if car?.isCommandRequested == true && (car?.commandType == 2 || car?.commandType == 6) {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle()).frame(width: 50, height: 50)
                 } else {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 24))
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.white)
+                    showChargePopup = true
                 }
-            }.background((car?.evInfo.isCharging == true || car?.evInfo.isQuickCharging == true) ? Color.accentColor : Color.gray).cornerRadius(25).disabled((car?.isCommandRequested == true || car?.evInfo.isCharging == true)).alert(isPresented: $showChargePopup) {
+            }
+            .disabled(car?.isCommandRequested == true || car?.evInfo.isCharging == true)
+            .alert(isPresented: $showChargePopup) {
                 Alert(
                     title: Text("Start charging"),
                     message: Text("Are you sure?"),
@@ -106,7 +132,8 @@ struct ActionBar: View {
                     },
                     secondaryButton: .cancel()
                 )
-            }.confirmationDialog(Text("Start charging"), isPresented: $showChargeOptsPopup) {
+            }
+            .confirmationDialog(Text("Start charging"), isPresented: $showChargeOptsPopup) {
                 Button(LocalizedStringKey("Charging to 100%")) {
                     Task {
                         car?.isCommandRequested = true
@@ -123,51 +150,42 @@ struct ActionBar: View {
             } message: {
                 Text("Start charging")
             }
-            Button(action: {
+
+            // Plug / Cable status
+            actionButton(
+                systemName: "powerplug.fill",
+                isLoading: false,
+                background: car?.evInfo.isPluggedIn == true ? Color.accentColor : .gray,
+                size: buttonSize
+            ) {
                 showCablePopup = true
-            }) {
-                Image(systemName: "powerplug.fill")
-                    .font(.system(size: 24))
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.white)
-            }.background(car?.evInfo.isPluggedIn == true ? Color.accentColor : Color.gray).cornerRadius(25).alert(isPresented: $showCablePopup) {
+            }
+            .alert(isPresented: $showCablePopup) {
                 Alert(
                     title: Text("Charging cable"),
-                    message: car?.evInfo.isPluggedIn == true ? Text("AC charging cable is plugged in") : Text("AC charging cable is unplugged")
+                    message: car?.evInfo.isPluggedIn == true
+                        ? Text("AC charging cable is plugged in")
+                        : Text("AC charging cable is unplugged")
                 )
             }
-            Button(action: {
-                if (car?.tcuType == .ficosa2016 && car?.evInfo.isAcStatus != true) {
+
+            // Fan / A/C
+            actionButton(
+                systemName: "fanblades.fill",
+                isLoading: car?.isCommandRequested == true && (car?.commandType == 3 || car?.commandType == 4),
+                background: car?.evInfo.isAcStatus == true ? Color.accentColor : .gray,
+                size: buttonSize,
+                rotation: car?.evInfo.isAcStatus == true ? rotationAngle : 0,
+                startSpinning: car?.evInfo.isAcStatus == true
+            ) {
+                if car?.tcuType == .ficosa2016 && car?.evInfo.isAcStatus != true {
                     showACTempPopup = true
                 } else {
                     showACPopup = true
                 }
-            }) {
-                if car?.isCommandRequested == true && (car?.commandType == 3 || car?.commandType == 4) {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle()).frame(width: 50, height: 50)
-                } else {
-                    if car?.evInfo.isAcStatus == true {
-                        Image(systemName: "fanblades.fill")
-                            .font(.system(size: 24))
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.white)
-                            .rotationEffect(.degrees(rotationAngle), anchor: .center) // <- NEW
-                            .onAppear {
-                                if (!isFanSpin) {
-                                    isFanSpin = true
-                                    withAnimation(Animation.linear(duration: 0.7).repeatForever(autoreverses: false)) {
-                                        rotationAngle += 360
-                                    }
-                                }
-                            }
-                    } else {
-                        Image(systemName: "fanblades.fill")
-                            .font(.system(size: 24))
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.white)
-                    }
-                }
-            }.background(car?.evInfo.isAcStatus == true ? Color.accentColor : Color.gray).cornerRadius(25).disabled(car?.isCommandRequested == true).alert(isPresented: $showACPopup) {
+            }
+            .disabled(car?.isCommandRequested == true)
+            .alert(isPresented: $showACPopup) {
                 Alert(
                     title: Text(car?.evInfo.isAcStatus == true ? "Stop A/C" : "Start A/C"),
                     message: Text("Are you sure?"),
@@ -179,8 +197,9 @@ struct ActionBar: View {
                     },
                     secondaryButton: .cancel()
                 )
-            }.popover(isPresented: $showACTempPopup) {
-                VStack() {
+            }
+            .popover(isPresented: $showACTempPopup) {
+                VStack {
                     if #available(iOS 26.0, *) {
                         Picker("Temperature", selection: $acTemp) {
                             ForEach(16...31, id: \.self) { number in
@@ -199,44 +218,51 @@ struct ActionBar: View {
                         .pickerStyle(.wheel)
                         .presentationCompactAdaptation(.popover)
                     }
+
                     if #available(iOS 26.0, *) {
                         Button(LocalizedStringKey("Start A/C")) {
                             showACPopup = false
                             showACTempPopup = false
                             Task {
                                 car?.isCommandRequested = true
-                                await sendCommand(3, false, ["unit": AnyJSON.number(0), "temp": AnyJSON.number(Double($acTemp.wrappedValue))])
+                                await sendCommand(3, false, [
+                                    "unit": AnyJSON.number(0),
+                                    "temp": AnyJSON.number(Double(acTemp))
+                                ])
                             }
-                        }.buttonSizing(.flexible).buttonStyle(.glass)
+                        }
+                        .buttonSizing(.flexible)
+                        .buttonStyle(.glass)
                     } else {
                         Button(LocalizedStringKey("Start A/C")) {
                             showACPopup = false
                             showACTempPopup = false
                             Task {
                                 car?.isCommandRequested = true
-                                await sendCommand(3, false, ["unit": AnyJSON.number(0), "temp": AnyJSON.number(Double($acTemp.wrappedValue))])
+                                await sendCommand(3, false, [
+                                    "unit": AnyJSON.number(0),
+                                    "temp": AnyJSON.number(Double(acTemp))
+                                ])
                             }
-                        }.buttonStyle(.bordered)
+                        }
+                        .buttonStyle(.bordered)
                     }
-                }.padding()
-            }.onChange(of: car?.evInfo.isAcStatus) {_, _ in
-                if car?.evInfo.isAcStatus != true {
-                    isFanSpin = false
                 }
+                .padding()
             }
-            if (car?.supportedCommands?.contains(11) == true) {
-                Button(action: {
+
+            // Horn & Lights
+            if car?.supportedCommands?.contains(11) == true {
+                actionButton(
+                    systemName: "horn.blast.fill",
+                    isLoading: car?.isCommandRequested == true && car?.commandType == 11,
+                    background: .gray,
+                    size: buttonSize
+                ) {
                     showHornUnlock = true
-                }) {
-                    if car?.isCommandRequested == true && car?.commandType == 11 {
-                        ProgressView().progressViewStyle(CircularProgressViewStyle()).frame(width: 50, height: 50)
-                    } else {
-                        Image(systemName: "horn.blast.fill")
-                            .font(.system(size: 24))
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.white)
-                    }
-                }.background(Color.gray).cornerRadius(25).disabled(car?.isCommandRequested == true).alert(isPresented: $showHornUnlock) {
+                }
+                .disabled(car?.isCommandRequested == true)
+                .alert(isPresented: $showHornUnlock) {
                     Alert(
                         title: Text("Horn & Lights"),
                         message: Text("Are you sure?"),
@@ -251,11 +277,47 @@ struct ActionBar: View {
                 }
             }
         }
-        .foregroundColor(.primary)
-        .padding(.vertical)
+    }
+
+    // MARK: - Reusable Button
+
+    @ViewBuilder
+    private func actionButton(
+        systemName: String,
+        isLoading: Bool,
+        background: Color,
+        size: CGFloat,
+        rotation: Double = 0,
+        startSpinning: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Group {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                } else {
+                    Image(systemName: systemName)
+                        .font(.system(size: size * 0.48))
+                        .rotationEffect(.degrees(rotation), anchor: .center)
+                        .onAppear {
+                            if startSpinning && !isFanSpin {
+                                isFanSpin = true
+                                withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
+                                    rotationAngle += 360
+                                }
+                            }
+                        }
+                }
+            }
+            .frame(width: size, height: size)
+            .foregroundColor(.white)
+        }
+        .background(background)
+        .cornerRadius(size / 2)
     }
 }
 
 #Preview {
-    ActionBar(sendCommand: {_,_,_ in }, car: .constant(nil))
+    ActionBar(sendCommand: { _, _, _ in }, car: .constant(nil))
 }
