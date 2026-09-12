@@ -47,15 +47,6 @@
         }
       },
       {
-        "package": "OSInfo",
-        "repositoryURL": "https://github.com/MarcoEidinger/OSInfo.git",
-        "state": {
-          "branch": null,
-          "revision": "fa5164afc8ef56c3069728629647f140c03933f5",
-          "version": "1.0.2"
-        }
-      },
-      {
         "package": "SnapKit",
         "repositoryURL": "https://github.com/SnapKit/SnapKit",
         "state": {

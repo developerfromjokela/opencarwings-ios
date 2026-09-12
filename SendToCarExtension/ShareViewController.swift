@@ -17,9 +17,6 @@ class ShareViewController: UIViewController {
         
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let messageLabel = UILabel()
-    
-    private let keychainAccessGroup = "R7R98T4924.com.developerfromjokela.OpenCARWINGS"
-    private let service = "group.com.developerfromjokela.OpenCARWINGS"
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -43,11 +40,11 @@ class ShareViewController: UIViewController {
         
         setupView()
         
-        var refreshToken = (try? Keychain(service: service, accessGroup: keychainAccessGroup).get("ocw_refresh_token")) ?? ""
-        var username = (try? Keychain(service: service, accessGroup: keychainAccessGroup).get("ocw_username")) ?? ""
-        var accessToken = (try? Keychain(service: service, accessGroup: keychainAccessGroup).get("ocw_access_token")) ?? ""
-        var serverUrl: String = (try? Keychain(service: service, accessGroup: keychainAccessGroup).get("ocw_server")) ?? "https://opencarwings.viaaq.eu"
-        var lastActiveCar = (try? Keychain(service: service, accessGroup: keychainAccessGroup).get("last_active_car")) ?? ""
+        var refreshToken = (try? KeychainConfig.keychain().get("ocw_refresh_token")) ?? ""
+        var username = (try? KeychainConfig.keychain().get("ocw_username")) ?? ""
+        var accessToken = (try? KeychainConfig.keychain().get("ocw_access_token")) ?? ""
+        var serverUrl: String = (try? KeychainConfig.keychain().get("ocw_server")) ?? "https://opencarwings.viaaq.eu"
+        var lastActiveCar = (try? KeychainConfig.keychain().get("last_active_car")) ?? ""
         
         if refreshToken.isEmpty {
             showAlert(message: NSLocalizedString("Please sign in before using this function", comment: ""))
@@ -175,8 +172,8 @@ class ShareViewController: UIViewController {
             case let .ok(newTokenDat):
                 let newToken = newTokenDat?.access ?? ""
                 let newRefreshToken = newTokenDat?.refresh ?? ""
-                try? Keychain(accessGroup: keychainAccessGroup).set("ocw_access_token", key: newToken)
-                try? Keychain(accessGroup: keychainAccessGroup).set("ocw_refresh_token", key: newRefreshToken)
+                try? KeychainConfig.keychain().set(newToken, key: "ocw_access_token")
+                try? KeychainConfig.keychain().set(newRefreshToken, key: "ocw_refresh_token")
                 await sendLocationToCar(url, lastActiveCar, serverUrl, newToken, refreshToken)
                 break
             case let .error(error):

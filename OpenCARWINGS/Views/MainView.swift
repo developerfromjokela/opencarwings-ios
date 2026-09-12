@@ -11,7 +11,6 @@ import Get
 import RestAPI
 import MapKit
 import CoreLocation
-import OSInfo
 import WidgetKit
 
 enum Kind: String {
@@ -559,7 +558,7 @@ struct MainView: View {
             // Send push data
             do {
                 var tokenUpdatePload = TokenMetadataUpdate(refresh: refreshToken)
-                tokenUpdatePload.deviceOs = "\(OS.current.name) \(OS.current.displayVersion)"
+                tokenUpdatePload.deviceOs = "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
                 tokenUpdatePload.deviceType = "apple"
                 tokenUpdatePload.appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
                 tokenUpdatePload.pushNotificationKey = UserDefaults.standard.string(forKey: "APNSToken")
