@@ -110,6 +110,7 @@
 				Net/APIClientDelegate.swift,
 				Net/Utils/DateUtils.swift,
 				Net/Utils/SessionHandler.swift,
+				SecureStorage/KeyChainWrapper.swift,
 				Utils/NaiveDateUtils.swift,
 			);
 			target = C92E16742E5FC26100892862 /* SendToCarExtension */;
