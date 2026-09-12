@@ -1270,6 +1270,10 @@
         }
       }
     },
+    "Incorrect PIN, please try again" : {
+      "comment" : "Shown in the command PIN sheet after the server rejected the PIN",
+      "extractionState" : "manual"
+    },
     "Invalid username or password" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2610,7 +2614,8 @@
             "value" : "Avaa auton lukitus"
           }
         }
-      },
+      }
+    },
     "Use %@" : {
 
     },

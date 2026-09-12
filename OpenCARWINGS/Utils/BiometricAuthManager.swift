@@ -75,6 +75,20 @@ public final class BiometricAuthManager: ObservableObject {
         try? Keychain(service: keychainService, accessGroup: keychainAccessGroup).remove(pinKeychainKey)
         try? Keychain(service: keychainService).remove(pinKeychainKey)
     }
+
+    /// Checks whether `pin` is the PIN currently stored for biometric authentication
+    public func isStoredPin(_ pin: String) -> Bool {
+        guard let storedPin = getStoredPin(), !storedPin.isEmpty else {
+            return false
+        }
+        return storedPin == pin
+    }
+
+    /// Turns biometric authentication off and discards the stored PIN
+    public func disableBiometrics() {
+        removeStoredPin()
+        isBiometricsEnabled = false
+    }
     
     /// Evaluates biometric authentication and returns the stored PIN if successful
     public func authenticateAndGetPin(reason: String? = nil) async -> (success: Bool, pin: String?, error: String?) {

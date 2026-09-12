@@ -88,9 +88,14 @@ struct PinSheetView: View {
     }
     
     private func handleSubmission(pin: String) {
-        if bioManager.canEvaluateBiometrics().canEvaluate && saveForBiometrics {
-            bioManager.savePin(pin)
-            bioManager.isBiometricsEnabled = true
+        if bioManager.canEvaluateBiometrics().canEvaluate {
+            if saveForBiometrics {
+                // Also re-arms biometrics after a PIN change made the previous one stale
+                bioManager.savePin(pin)
+                bioManager.isBiometricsEnabled = true
+            } else {
+                bioManager.disableBiometrics()
+            }
         }
         presentationMode.wrappedValue.dismiss()
         onSubmit(pin)

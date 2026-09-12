@@ -64,6 +64,7 @@ struct MainView: View {
     @State private var pendingCmdType = 0
     @State private var pendingCmdOutside = false
     @State private var pendingCmdArgs: [String:AnyJSON]? = nil
+    @State private var pinErrorMsg: String? = nil
     
     
     var body: some View {
@@ -215,7 +216,7 @@ struct MainView: View {
                 }
             }
             .sheet(isPresented: $showPinPrompt) {
-                PinSheetView(onSubmit: {pin in
+                PinSheetView(errorMessage: pinErrorMsg, onSubmit: {pin in
                     if (pendingCmdType > 0) {
                         Task {
                             selectedCar?.isCommandRequested = true
@@ -357,6 +358,9 @@ struct MainView: View {
         pendingCmdArgs = nil
         pendingCmdType = 0
         pendingCmdOutside = false
+        pinErrorMsg = nil
+        // The stored PIN belongs to the account that just signed out
+        BiometricAuthManager.shared.removeStoredPin()
     }
     
     private func updateCarInfo() async {
@@ -436,6 +440,7 @@ struct MainView: View {
                 }
             }
             
+            pinErrorMsg = nil
             showPinPrompt = accountInfo?.isCommandPinSet == true
             showSetupPinPrompt = !showPinPrompt
             return
@@ -484,6 +489,18 @@ struct MainView: View {
         } catch let e as OCWAPIError {
             selectedCar?.isCommandRequested = false
             if (e.statusCode == 403) {
+                if let commandPin {
+                    // The server refused this PIN. When it is the one kept for biometrics
+                    // - the PIN was changed elsewhere - forget it, so that Face ID stops
+                    // handing over a PIN the server no longer accepts and the new one is
+                    // asked for instead.
+                    if BiometricAuthManager.shared.isStoredPin(commandPin) {
+                        BiometricAuthManager.shared.removeStoredPin()
+                    }
+                    pinErrorMsg = e.apiError?.detail ?? e.apiError?.error ?? NSLocalizedString("Incorrect PIN, please try again", comment: "Shown in the command PIN sheet after the server rejected the PIN")
+                } else {
+                    pinErrorMsg = nil
+                }
                 pendingCmdType = type
                 pendingCmdOutside = outside
                 pendingCmdArgs = args
