@@ -25,7 +25,6 @@
 		C9C34F142F057A5800212370 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C94AF75D2DC8180E00E8C450 /* Localizable.xcstrings */; };
 		C9CDE90C2DC13889007610FF /* RestAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C9CDE90B2DC13889007610FF /* RestAPI */; };
 		C9CDE9312DC186FE007610FF /* NotificationBannerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C9CDE9302DC186FE007610FF /* NotificationBannerSwift */; };
-		C9CDE94D2DC2C8DE007610FF /* OSInfo in Frameworks */ = {isa = PBXBuildFile; productRef = C9CDE94C2DC2C8DE007610FF /* OSInfo */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -202,7 +201,6 @@
 				C98CFC222DC11B490021C3B5 /* KeychainAccess in Frameworks */,
 				C98CFC252DC11B9F0021C3B5 /* Starscream in Frameworks */,
 				C9CDE9312DC186FE007610FF /* NotificationBannerSwift in Frameworks */,
-				C9CDE94D2DC2C8DE007610FF /* OSInfo in Frameworks */,
 				C9CDE90C2DC13889007610FF /* RestAPI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -327,7 +325,6 @@
 				C98CFC3B2DC137280021C3B5 /* Get */,
 				C9CDE90B2DC13889007610FF /* RestAPI */,
 				C9CDE9302DC186FE007610FF /* NotificationBannerSwift */,
-				C9CDE94C2DC2C8DE007610FF /* OSInfo */,
 			);
 			productName = OpenCARWINGS;
 			productReference = C98CFBF12DC11A3C0021C3B5 /* OpenCARWINGS.app */;
@@ -449,7 +446,6 @@
 				C98CFC232DC11B9F0021C3B5 /* XCRemoteSwiftPackageReference "Starscream" */,
 				C98CFC3A2DC137280021C3B5 /* XCRemoteSwiftPackageReference "Get" */,
 				C9CDE92F2DC186FE007610FF /* XCRemoteSwiftPackageReference "NotificationBanner" */,
-				C9CDE94B2DC2C8DE007610FF /* XCRemoteSwiftPackageReference "OSInfo" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C98CFBF22DC11A3C0021C3B5 /* Products */;
@@ -1041,14 +1037,6 @@
 				minimumVersion = 4.0.0;
 			};
 		};
-		C9CDE94B2DC2C8DE007610FF /* XCRemoteSwiftPackageReference "OSInfo" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MarcoEidinger/OSInfo.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1103,11 +1091,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C9CDE92F2DC186FE007610FF /* XCRemoteSwiftPackageReference "NotificationBanner" */;
 			productName = NotificationBannerSwift;
-		};
-		C9CDE94C2DC2C8DE007610FF /* OSInfo */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C9CDE94B2DC2C8DE007610FF /* XCRemoteSwiftPackageReference "OSInfo" */;
-			productName = OSInfo;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -8,7 +8,6 @@
 import SwiftUI
 import Get
 import RestAPI
-import OSInfo
 
 struct SignInView: View {
     private let servers = ["opencarwings.viaaq.eu", "custom"]
@@ -129,7 +128,7 @@ struct SignInView: View {
         
         do {
             var pload = JWTTokenObtainPair(
-                deviceType: "apple", deviceOs: "\(OS.current.name) \(OS.current.displayVersion)",
+                deviceType: "apple", deviceOs: "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
                 appVersion:Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
                 pushNotificationKey: UserDefaults.standard.string(forKey: "APNSToken"),
                 username: username, password: password
