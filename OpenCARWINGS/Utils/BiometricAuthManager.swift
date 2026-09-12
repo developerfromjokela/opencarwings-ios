@@ -17,8 +17,6 @@ public final class BiometricAuthManager: ObservableObject {
     @AppStorage("isBiometricsEnabled") public var isBiometricsEnabled: Bool = false
     
     private let pinKeychainKey = "ocw_stored_command_pin"
-    private let keychainService = "group.com.developerfromjokela.OpenCARWINGS"
-    private let keychainAccessGroup = "R7R98T4924.com.developerfromjokela.OpenCARWINGS"
     
     private init() {}
     
@@ -55,25 +53,17 @@ public final class BiometricAuthManager: ObservableObject {
     
     /// Stores the command PIN securely in Keychain for biometric authentication
     public func savePin(_ pin: String) {
-        do {
-            try Keychain(service: keychainService, accessGroup: keychainAccessGroup).set(pin, key: pinKeychainKey)
-        } catch {
-            try? Keychain(service: keychainService).set(pin, key: pinKeychainKey)
-        }
+        try? KeychainConfig.keychain().set(pin, key: pinKeychainKey)
     }
     
     /// Retrieves the stored command PIN from Keychain
     public func getStoredPin() -> String? {
-        if let pin = try? Keychain(service: keychainService, accessGroup: keychainAccessGroup).get(pinKeychainKey), !pin.isEmpty {
-            return pin
-        }
-        return try? Keychain(service: keychainService).get(pinKeychainKey)
+        return try? KeychainConfig.keychain().get(pinKeychainKey)
     }
     
     /// Removes the stored command PIN from Keychain
     public func removeStoredPin() {
-        try? Keychain(service: keychainService, accessGroup: keychainAccessGroup).remove(pinKeychainKey)
-        try? Keychain(service: keychainService).remove(pinKeychainKey)
+        try? KeychainConfig.keychain().remove(pinKeychainKey)
     }
 
     /// Checks whether `pin` is the PIN currently stored for biometric authentication
