@@ -29,13 +29,10 @@ struct ActionBar: View {
             // Preferred size
             buttonRow(buttonSize: 50, spacing: 10)
 
-            // Slightly smaller
             buttonRow(buttonSize: 46, spacing: 8)
 
-            // Smaller still
             buttonRow(buttonSize: 42, spacing: 6)
 
-            // Compact fallback
             buttonRow(buttonSize: 38, spacing: 5)
         }
         .padding(.horizontal, 12)
@@ -279,7 +276,7 @@ struct ActionBar: View {
         }
     }
 
-    // MARK: - Reusable Button
+    // MARK: - Scalable action button
 
     @ViewBuilder
     private func actionButton(
