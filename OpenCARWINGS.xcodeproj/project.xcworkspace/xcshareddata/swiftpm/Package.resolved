@@ -1,0 +1,79 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Get",
+        "repositoryURL": "https://github.com/kean/Get",
+        "state": {
+          "branch": null,
+          "revision": "31249885da1052872e0ac91a2943f62567c0d96d",
+          "version": "2.2.1"
+        }
+      },
+      {
+        "package": "KeychainAccess",
+        "repositoryURL": "https://github.com/kishikawakatsumi/KeychainAccess.git",
+        "state": {
+          "branch": "master",
+          "revision": "e0c7eebc5a4465a3c4680764f26b7a61f567cdaf",
+          "version": null
+        }
+      },
+      {
+        "package": "MarqueeLabel",
+        "repositoryURL": "https://github.com/cbpowell/MarqueeLabel",
+        "state": {
+          "branch": null,
+          "revision": "877e810534cda9afabb8143ae319b7c3341b121b",
+          "version": "4.5.0"
+        }
+      },
+      {
+        "package": "NaiveDate",
+        "repositoryURL": "https://github.com/CreateAPI/NaiveDate",
+        "state": {
+          "branch": null,
+          "revision": "a51026971f3819a7d034b52ecb9404d719c04482",
+          "version": "1.1.0"
+        }
+      },
+      {
+        "package": "NotificationBannerSwift",
+        "repositoryURL": "https://github.com/Daltron/NotificationBanner.git",
+        "state": {
+          "branch": null,
+          "revision": "be52806c3b95f9210955a8a94259d40f8a9e928d",
+          "version": "4.0.0"
+        }
+      },
+      {
+        "package": "OSInfo",
+        "repositoryURL": "https://github.com/MarcoEidinger/OSInfo.git",
+        "state": {
+          "branch": null,
+          "revision": "fa5164afc8ef56c3069728629647f140c03933f5",
+          "version": "1.0.2"
+        }
+      },
+      {
+        "package": "SnapKit",
+        "repositoryURL": "https://github.com/SnapKit/SnapKit",
+        "state": {
+          "branch": null,
+          "revision": "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+          "version": "5.7.1"
+        }
+      },
+      {
+        "package": "Starscream",
+        "repositoryURL": "https://github.com/daltoniam/Starscream.git",
+        "state": {
+          "branch": null,
+          "revision": "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
+          "version": "4.0.8"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
