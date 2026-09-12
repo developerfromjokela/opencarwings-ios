@@ -221,9 +221,6 @@ struct MainView: View {
                         Task {
                             selectedCar?.isCommandRequested = true
                             await sendTCUCommandImpl(pendingCmdType, outside: pendingCmdOutside, args: pendingCmdArgs, commandPin: pin)
-                            pendingCmdType = 0
-                            pendingCmdOutside = false
-                            pendingCmdArgs = nil
                         }
                     }
                 })
@@ -234,9 +231,6 @@ struct MainView: View {
                         Task {
                             selectedCar?.isCommandRequested = true
                             await sendTCUCommandImpl(pendingCmdType, outside: pendingCmdOutside, args: pendingCmdArgs, commandPin: pin, refreshAccountInfo: true)
-                            pendingCmdType = 0
-                            pendingCmdOutside = false
-                            pendingCmdArgs = nil
                         }
                     }
                 }, serverUrl: $serverUrl, accessToken: $accessToken, refreshToken: $refreshToken)
@@ -355,9 +349,7 @@ struct MainView: View {
         ctxOutside = false
         showPinPrompt = false
         showSetupPinPrompt = false
-        pendingCmdArgs = nil
-        pendingCmdType = 0
-        pendingCmdOutside = false
+        clearPendingCommand()
         pinErrorMsg = nil
         // The stored PIN belongs to the account that just signed out
         BiometricAuthManager.shared.removeStoredPin()
@@ -433,9 +425,6 @@ struct MainView: View {
                 let (success, pin, _) = await BiometricAuthManager.shared.authenticateAndGetPin(reason: "Authorize sensitive command")
                 if success, let pin {
                     await sendTCUCommandImpl(type, outside: outside, args: args, commandPin: pin)
-                    pendingCmdType = 0
-                    pendingCmdOutside = false
-                    pendingCmdArgs = nil
                     return
                 }
             }
@@ -449,7 +438,17 @@ struct MainView: View {
     }
 
     
+    private func clearPendingCommand() {
+        pendingCmdType = 0
+        pendingCmdOutside = false
+        pendingCmdArgs = nil
+    }
+
     private func sendTCUCommandImpl(_ type: Int, outside: Bool = false, args: [String:AnyJSON]? = nil, commandPin: String? = nil, refreshAccountInfo: Bool = false) async {
+        // The command that was waiting for a PIN is being sent now. Only the 403
+        // handler below puts it back, so a rejected PIN can be entered again
+        // without losing the command.
+        clearPendingCommand()
         let client = OCWAPIClientFactory.createAPIClient(serverUrl, accessToken)
         
         do {
