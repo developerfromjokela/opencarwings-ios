@@ -50,7 +50,7 @@ struct ActionBar: View {
 
     @ViewBuilder
     private func buttonRow(buttonSize: CGFloat, spacing: CGFloat) -> some View {
-        HStack(spacing: spacing) {
+        let row = HStack(spacing: spacing) {
             // Unlock
             if car?.supportedCommands?.contains(7) == true {
                 actionButton(
@@ -274,6 +274,13 @@ struct ActionBar: View {
                 }
             }
         }
+        if #available(iOS 26.0, *) {
+            GlassEffectContainer {
+                row
+            }
+        } else {
+            row
+        }
     }
 
     // MARK: - Scalable action button
@@ -288,7 +295,7 @@ struct ActionBar: View {
         startSpinning: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        let baseBtn = Button(action: action) {
             Group {
                 if isLoading {
                     ProgressView()
@@ -310,8 +317,12 @@ struct ActionBar: View {
             .frame(width: size, height: size)
             .foregroundColor(.white)
         }
-        .background(background)
-        .cornerRadius(size / 2)
+        if #available(iOS 26.0, *) {
+            baseBtn.buttonStyle(.plain).glassEffect(.regular.tint(background).interactive(), in: .ellipse)
+                .buttonBorderShape(.circle)
+        } else {
+            baseBtn.clipShape(Circle()).buttonStyle(.plain).background(background)
+        }
     }
 }
 
