@@ -32,10 +32,10 @@ struct HomeItem: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-            }.frame(alignment: .center)
+            }.contentShape(Rectangle()).frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
             .padding(12).padding(.horizontal, 10)
-        }.buttonStyle(.plain).foregroundColor(.primary).onChange(of: isActive) { value in
+        }.foregroundColor(.primary).onChange(of: isActive) { value in
             ctxOut = value
-        }
+        }.buttonStyle(.plain)
     }
 }
