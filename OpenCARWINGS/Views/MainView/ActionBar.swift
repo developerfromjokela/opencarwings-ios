@@ -17,8 +17,6 @@ struct ActionBar: View {
     @State private var showCablePopup = false
     @State private var showACPopup = false
     @State private var showACTempPopup = false
-    @State private var isFanSpin = false
-    @State private var rotationAngle = 0.0
     @State private var acTemp: Int = 21
 
     var sendCommand: (Int, Bool, [String: AnyJSON]?) async -> Void
@@ -39,11 +37,6 @@ struct ActionBar: View {
         .padding(.vertical)
         .frame(maxWidth: .infinity)
         .foregroundColor(.primary)
-        .onChange(of: car?.evInfo.isAcStatus) { _, newValue in
-            if newValue != true {
-                isFanSpin = false
-            }
-        }
     }
 
     // MARK: - Button Row
@@ -53,7 +46,7 @@ struct ActionBar: View {
         let row = HStack(spacing: spacing) {
             // Unlock
             if car?.supportedCommands?.contains(7) == true {
-                actionButton(
+                ScalableActionButton(
                     systemName: "lock.open.fill",
                     isLoading: car?.isCommandRequested == true && car?.commandType == 7,
                     background: .gray,
@@ -79,7 +72,7 @@ struct ActionBar: View {
 
             // Lock
             if car?.supportedCommands?.contains(8) == true {
-                actionButton(
+                ScalableActionButton(
                     systemName: "lock.fill",
                     isLoading: car?.isCommandRequested == true && car?.commandType == 8,
                     background: .gray,
@@ -104,7 +97,7 @@ struct ActionBar: View {
             }
 
             // Charge
-            actionButton(
+            ScalableActionButton(
                 systemName: "bolt.fill",
                 isLoading: car?.isCommandRequested == true && (car?.commandType == 2 || car?.commandType == 6),
                 background: (car?.evInfo.isCharging == true || car?.evInfo.isQuickCharging == true) ? Color.accentColor : .gray,
@@ -149,7 +142,7 @@ struct ActionBar: View {
             }
 
             // Plug / Cable status
-            actionButton(
+            ScalableActionButton(
                 systemName: "powerplug.fill",
                 isLoading: false,
                 background: car?.evInfo.isPluggedIn == true ? Color.accentColor : .gray,
@@ -167,12 +160,11 @@ struct ActionBar: View {
             }
 
             // Fan / A/C
-            actionButton(
+            ScalableActionButton(
                 systemName: "fanblades.fill",
                 isLoading: car?.isCommandRequested == true && (car?.commandType == 3 || car?.commandType == 4),
                 background: car?.evInfo.isAcStatus == true ? Color.accentColor : .gray,
                 size: buttonSize,
-                rotation: car?.evInfo.isAcStatus == true ? rotationAngle : 0,
                 startSpinning: car?.evInfo.isAcStatus == true
             ) {
                 if car?.tcuType == .ficosa2016 && car?.evInfo.isAcStatus != true {
@@ -250,7 +242,7 @@ struct ActionBar: View {
 
             // Horn & Lights
             if car?.supportedCommands?.contains(11) == true {
-                actionButton(
+                ScalableActionButton(
                     systemName: "horn.blast.fill",
                     isLoading: car?.isCommandRequested == true && car?.commandType == 11,
                     background: .gray,
@@ -274,6 +266,7 @@ struct ActionBar: View {
                 }
             }
         }
+        
         if #available(iOS 26.0, *) {
             GlassEffectContainer {
                 row
@@ -282,19 +275,39 @@ struct ActionBar: View {
             row
         }
     }
+}
 
-    // MARK: - Scalable action button
+// MARK: - Scalable action button
+
+struct ScalableActionButton: View {
+    var systemName: String
+    var isLoading: Bool
+    var background: Color
+    var size: CGFloat
+    var startSpinning: Bool = false
+    var action: () -> Void
+
+    @State private var rotationAngle: Double = 0
+    @State private var animationToken = UUID()
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        buttonContent
+            .onAppear {
+                updateAnimation()
+            }
+            .onChange(of: startSpinning) { _, _ in
+                updateAnimation()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    restartAnimation()
+                }
+            }
+    }
 
     @ViewBuilder
-    private func actionButton(
-        systemName: String,
-        isLoading: Bool,
-        background: Color,
-        size: CGFloat,
-        rotation: Double = 0,
-        startSpinning: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
+    private var buttonContent: some View {
         let baseBtn = Button(action: action) {
             Group {
                 if isLoading {
@@ -303,37 +316,50 @@ struct ActionBar: View {
                 } else {
                     Image(systemName: systemName)
                         .font(.system(size: size * 0.48))
-                        .rotationEffect(.degrees(startSpinning ? rotationAngle : 0), anchor: .center)
-                        .onAppear {
-                            if startSpinning {
-                                rotationAngle = 0
-                                withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
-                                    rotationAngle = 360
-                                }
-                            }
-                        }
-                        .onChange(of: startSpinning) { _, isSpinning in
-                            if isSpinning {
-                                rotationAngle = 0
-                                withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
-                                    rotationAngle = 360
-                                }
-                            } else {
-                                withAnimation(.easeOut(duration: 0.3)) {
-                                    rotationAngle = 0
-                                }
-                            }
-                        }
+                        .rotationEffect(.degrees(rotationAngle), anchor: .center)
+                        .id(animationToken)
                 }
             }
             .frame(width: size, height: size)
             .foregroundColor(.white)
         }
+        
         if #available(iOS 26.0, *) {
-            baseBtn.buttonStyle(.plain).glassEffect(.regular.tint(background).interactive(), in: .ellipse)
+            baseBtn.buttonStyle(.plain)
+                .glassEffect(.regular.tint(background).interactive(), in: .ellipse)
                 .buttonBorderShape(.circle)
         } else {
-            baseBtn.clipShape(Circle()).buttonStyle(.plain).background(background)
+            baseBtn.clipShape(Circle())
+                .buttonStyle(.plain)
+                .background(background)
+        }
+    }
+
+    private func updateAnimation() {
+        if startSpinning {
+            restartAnimation()
+        } else {
+            stopAnimation()
+        }
+    }
+
+    private func restartAnimation() {
+        rotationAngle = 0
+        animationToken = UUID()
+        
+        guard startSpinning else { return }
+
+        // Delay starting the loop until stop is rendered
+        DispatchQueue.main.async {
+            withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
+                rotationAngle = 360
+            }
+        }
+    }
+
+    private func stopAnimation() {
+        withAnimation(.easeOut(duration: 0.3)) {
+            rotationAngle = 0
         }
     }
 }

@@ -34,7 +34,7 @@ struct HomeItem: View {
                 Image(systemName: "chevron.right")
             }.frame(alignment: .center)
             .padding(12).padding(.horizontal, 10)
-        }.foregroundColor(.primary).onChange(of: isActive) { value in
+        }.buttonStyle(.plain).foregroundColor(.primary).onChange(of: isActive) { value in
             ctxOut = value
         }
     }
