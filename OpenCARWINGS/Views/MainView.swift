@@ -64,6 +64,7 @@ struct MainView: View {
     @State private var pendingCmdType = 0
     @State private var pendingCmdOutside = false
     @State private var pendingCmdArgs: [String:AnyJSON]? = nil
+    @State private var pinErrorMsg: String? = nil
     
     
     var body: some View {
@@ -215,14 +216,11 @@ struct MainView: View {
                 }
             }
             .sheet(isPresented: $showPinPrompt) {
-                PinSheetView(onSubmit: {pin in
+                PinSheetView(errorMessage: pinErrorMsg, onSubmit: {pin in
                     if (pendingCmdType > 0) {
                         Task {
                             selectedCar?.isCommandRequested = true
                             await sendTCUCommandImpl(pendingCmdType, outside: pendingCmdOutside, args: pendingCmdArgs, commandPin: pin)
-                            pendingCmdType = 0
-                            pendingCmdOutside = false
-                            pendingCmdArgs = nil
                         }
                     }
                 })
@@ -233,9 +231,6 @@ struct MainView: View {
                         Task {
                             selectedCar?.isCommandRequested = true
                             await sendTCUCommandImpl(pendingCmdType, outside: pendingCmdOutside, args: pendingCmdArgs, commandPin: pin, refreshAccountInfo: true)
-                            pendingCmdType = 0
-                            pendingCmdOutside = false
-                            pendingCmdArgs = nil
                         }
                     }
                 }, serverUrl: $serverUrl, accessToken: $accessToken, refreshToken: $refreshToken)
@@ -354,9 +349,10 @@ struct MainView: View {
         ctxOutside = false
         showPinPrompt = false
         showSetupPinPrompt = false
-        pendingCmdArgs = nil
-        pendingCmdType = 0
-        pendingCmdOutside = false
+        clearPendingCommand()
+        pinErrorMsg = nil
+        // The stored PIN belongs to the account that just signed out
+        BiometricAuthManager.shared.removeStoredPin()
     }
     
     private func updateCarInfo() async {
@@ -423,6 +419,17 @@ struct MainView: View {
             pendingCmdType = type
             pendingCmdOutside = outside
             pendingCmdArgs = args
+            
+            // Check if Biometric Authentication is enabled and available
+            if accountInfo?.isCommandPinSet == true && BiometricAuthManager.shared.isBiometricsEnabled && BiometricAuthManager.shared.hasStoredPin {
+                let (success, pin, _) = await BiometricAuthManager.shared.authenticateAndGetPin(reason: "Authorize sensitive command")
+                if success, let pin {
+                    await sendTCUCommandImpl(type, outside: outside, args: args, commandPin: pin)
+                    return
+                }
+            }
+            
+            pinErrorMsg = nil
             showPinPrompt = accountInfo?.isCommandPinSet == true
             showSetupPinPrompt = !showPinPrompt
             return
@@ -431,7 +438,17 @@ struct MainView: View {
     }
 
     
+    private func clearPendingCommand() {
+        pendingCmdType = 0
+        pendingCmdOutside = false
+        pendingCmdArgs = nil
+    }
+
     private func sendTCUCommandImpl(_ type: Int, outside: Bool = false, args: [String:AnyJSON]? = nil, commandPin: String? = nil, refreshAccountInfo: Bool = false) async {
+        // The command that was waiting for a PIN is being sent now. Only the 403
+        // handler below puts it back, so a rejected PIN can be entered again
+        // without losing the command.
+        clearPendingCommand()
         let client = OCWAPIClientFactory.createAPIClient(serverUrl, accessToken)
         
         do {
@@ -471,6 +488,18 @@ struct MainView: View {
         } catch let e as OCWAPIError {
             selectedCar?.isCommandRequested = false
             if (e.statusCode == 403) {
+                if let commandPin {
+                    // The server refused this PIN. When it is the one kept for biometrics
+                    // - the PIN was changed elsewhere - forget it, so that Face ID stops
+                    // handing over a PIN the server no longer accepts and the new one is
+                    // asked for instead.
+                    if BiometricAuthManager.shared.isStoredPin(commandPin) {
+                        BiometricAuthManager.shared.removeStoredPin()
+                    }
+                    pinErrorMsg = e.apiError?.detail ?? e.apiError?.error ?? NSLocalizedString("Incorrect PIN, please try again", comment: "Shown in the command PIN sheet after the server rejected the PIN")
+                } else {
+                    pinErrorMsg = nil
+                }
                 pendingCmdType = type
                 pendingCmdOutside = outside
                 pendingCmdArgs = args

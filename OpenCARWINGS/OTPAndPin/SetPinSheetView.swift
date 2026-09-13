@@ -97,6 +97,10 @@ struct SetPinSheetView: View {
         
         do {
             try await client.send(Paths.account.pin.post(.init(otpCode: otp, newPin: pin, newPinConfirm: confirmPin)))
+            if BiometricAuthManager.shared.canEvaluateBiometrics().canEvaluate {
+                BiometricAuthManager.shared.savePin(pin)
+                BiometricAuthManager.shared.isBiometricsEnabled = true
+            }
             presentationMode.wrappedValue.dismiss()
             onSubmit(pin)
         } catch let e as OCWAPIError {
