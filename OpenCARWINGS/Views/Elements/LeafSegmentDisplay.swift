@@ -14,15 +14,12 @@ struct LeafSegmentDisplay: View {
     var isCharging: Bool
     var isQuickCharging: Bool
     
-    @State private var pulseOpacity: Double = 0.0
-    @State private var animationRunning = false
-
+    @State private var isPulsing = false
+    @State private var animationToken = UUID()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack {
-            // TODO bug in the pulse, after leaving the app and returning back, pulsing stops and it stays white
-            // all the time
-            
             // Segment display
             HStack(spacing: 4) {
                 ForEach(0..<totalSegments, id: \.self) { index in
@@ -35,25 +32,11 @@ struct LeafSegmentDisplay: View {
                         // Pulsing overlay for the target segment
                         if isCharging && index == targetSegmentIndex {
                             Rectangle()
-                                .fill(Color.white.opacity(pulseOpacity))
+                                .fill(Color.white.opacity(isPulsing ? 0.85 : 0.0))
                                 .frame(maxWidth: .infinity, minHeight: 20, maxHeight: 32)
                                 .border(Color.black, width: 0.8)
                                 .cornerRadius(4)
-                                .onChange(of: isQuickCharging) { _, _ in
-                                    if isCharging && animationRunning {
-                                        stopPulseAnimation()
-                                        startPulseAnimation()
-                                    }
-                                }
-                                .onAppear {
-                                    if isCharging && !animationRunning {
-                                        startPulseAnimation()
-                                    }
-                                }
-                        }
-                    }.onChange(of: isCharging) {_, _ in
-                        if !isCharging && animationRunning {
-                            stopPulseAnimation()
+                                .id(animationToken)
                         }
                     }
                 
@@ -71,28 +54,52 @@ struct LeafSegmentDisplay: View {
                     .foregroundColor(.secondary)
             }
         }
+        .onAppear {
+            updateAnimation()
+        }
+        .onChange(of: isCharging) { _, _ in
+            updateAnimation()
+        }
+        .onChange(of: isQuickCharging) { _, _ in
+            updateAnimation()
+        }
+        .onChange(of: targetSegmentIndex) { _, _ in
+            updateAnimation()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                restartAnimation()
+            }
+        }
     }
     
-    private func startPulseAnimation() {
-        guard !animationRunning else {return}
-        animationRunning = true
-         let interval = isQuickCharging ? 0.2 : 0.5
-         
-         withAnimation(.easeInOut(duration: interval).repeatForever(autoreverses: true)) {
-             pulseOpacity = 0.85
-         }
-     }
-     
-     // Stop the pulsing animation
-     private func stopPulseAnimation() {
-         animationRunning = false
-         withAnimation(.easeInOut(duration: 0.2)) {
-             pulseOpacity = 0.0
-         }
-     }
-     
+    private func updateAnimation() {
+        if isCharging {
+            restartAnimation()
+        } else {
+            stopAnimation()
+        }
+    }
     
-    // Determine the index of the segment to pulse
+    private func restartAnimation() {
+            isPulsing = false
+            animationToken = UUID()
+            guard isCharging else { return }
+            
+            let duration = isQuickCharging ? 0.3 : 0.5
+            DispatchQueue.main.async {
+                withAnimation(.easeInOut(duration: duration).repeatForever(autoreverses: true)) {
+                    isPulsing = true
+                }
+            }
+        }
+    
+    private func stopAnimation() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isPulsing = false
+        }
+    }
+    
     private var targetSegmentIndex: Int {
         let totalFilled = activeSegments
         if totalFilled > 0 {

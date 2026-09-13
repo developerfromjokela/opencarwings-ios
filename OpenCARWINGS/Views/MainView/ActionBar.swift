@@ -303,12 +303,24 @@ struct ActionBar: View {
                 } else {
                     Image(systemName: systemName)
                         .font(.system(size: size * 0.48))
-                        .rotationEffect(.degrees(rotation), anchor: .center)
+                        .rotationEffect(.degrees(startSpinning ? rotationAngle : 0), anchor: .center)
                         .onAppear {
-                            if startSpinning && !isFanSpin {
-                                isFanSpin = true
+                            if startSpinning {
+                                rotationAngle = 0
                                 withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
-                                    rotationAngle += 360
+                                    rotationAngle = 360
+                                }
+                            }
+                        }
+                        .onChange(of: startSpinning) { _, isSpinning in
+                            if isSpinning {
+                                rotationAngle = 0
+                                withAnimation(.linear(duration: 0.7).repeatForever(autoreverses: false)) {
+                                    rotationAngle = 360
+                                }
+                            } else {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    rotationAngle = 0
                                 }
                             }
                         }
