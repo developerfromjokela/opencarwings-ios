@@ -167,7 +167,7 @@ struct LocationView: View {
             try await client.send(Paths.api.car.vin(carLocation!.vin).patch(carUpdating))
             showProgress = false
             showError = true
-            errorMsg = String(format: NSLocalizedString("%@ sent to car!", comment: ""), locationName)
+            errorMsg = String(format: NSLocalizedString("%@ sent to %@!", comment: ""), locationName, carLocation!.nickname ?? carLocation!.vin)
         } catch let e as OCWAPIError {
             let autCheckResult = await SessionHandler.checkAndRenewSession(client, e, refreshToken, token)
             switch autCheckResult {
