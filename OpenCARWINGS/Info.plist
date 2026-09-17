@@ -4,7 +4,5 @@
 <dict>
 	<key>AppIdentifierPrefix</key>
 	<string>$(AppIdentifierPrefix)</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Use Face ID to authorize sensitive vehicle commands without typing your PIN.</string>
 </dict>
 </plist>

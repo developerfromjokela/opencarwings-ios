@@ -165,7 +165,7 @@ class ShareViewController: UIViewController {
             )
             
             try await client.send(Paths.api.car.vin(carResp.value.vin).patch(carToEdit))
-            showAlert(message: String(format: NSLocalizedString("%@ sent to car!", comment: ""), locationName))
+            showAlert(message: String(format: NSLocalizedString("%@ sent to %@!", comment: ""), locationName, carResp.value.nickname ?? carResp.value.vin))
         } catch let e as OCWAPIError {
             let autCheckResult = await SessionHandler.checkAndRenewSession(client, e, refreshToken, accessToken)
             switch autCheckResult {
@@ -178,7 +178,6 @@ class ShareViewController: UIViewController {
                 break
             case let .error(error):
                 var errorMsg = "Cannot connect to server. Please try again later."
-                errorMsg = "Cannot connect to server. Please try again later.";
                 if let apiErr = error as? OCWAPIError {
                     if apiErr.statusCode == 503 {
                         errorMsg = "Server is unavailable. Please try again later.";
@@ -193,8 +192,7 @@ class ShareViewController: UIViewController {
                 break
             }
         } catch let e {
-            print(e)
-            showAlert(message: NSLocalizedString("Cannot connect to server. Please try again later.", comment: ""))
+            showAlert(message: e.localizedDescription)
         }
     }
     

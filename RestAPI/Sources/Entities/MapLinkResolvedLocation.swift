@@ -5,12 +5,12 @@ import Foundation
 import NaiveDate
 
 public struct MapLinkResolvedLocation: Codable {
-    public var lat: String
-    public var lon: String
+    public var lat: Double
+    public var lon: Double
     public var name: String
     public var address: String
 
-    public init(lat: String, lon: String, name: String, address: String) {
+    public init(lat: Double, lon: Double, name: String, address: String) {
         self.lat = lat
         self.lon = lon
         self.name = name
@@ -19,8 +19,8 @@ public struct MapLinkResolvedLocation: Codable {
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: StringCodingKey.self)
-        self.lat = try values.decode(String.self, forKey: "lat")
-        self.lon = try values.decode(String.self, forKey: "lon")
+        self.lat = try values.decode(Double.self, forKey: "lat")
+        self.lon = try values.decode(Double.self, forKey: "lon")
         self.name = try values.decode(String.self, forKey: "name")
         self.address = try values.decode(String.self, forKey: "address")
     }

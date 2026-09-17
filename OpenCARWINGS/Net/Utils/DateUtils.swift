@@ -27,6 +27,14 @@ public struct DateUtils {
         return String(format: "%02d:%02d", hours, remainingMinutes)
     }
     
+    static func formatMinutesToDuration(_ minutes: Int, _ unitsStyle: DateComponentsFormatter.UnitsStyle = .abbreviated) -> String? {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = unitsStyle
+        formatter.zeroFormattingBehavior = .dropAll
+        return formatter.string(from: TimeInterval(minutes * 60))
+    }
+    
     static let multipleFormats: JSONDecoder.DateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)

@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Maplink {
     public var resolve: Resolve {
-        Resolve(path: path + "/resolve/")
+        Resolve(path: path + "/resolve")
     }
 
     public struct Resolve {
