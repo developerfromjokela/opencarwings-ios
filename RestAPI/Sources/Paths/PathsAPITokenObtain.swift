@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Token {
     public var obtain: Obtain {
-        Obtain(path: path + "/obtain")
+        Obtain(path: path + "/obtain/")
     }
 
     public struct Obtain {
