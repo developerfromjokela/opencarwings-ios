@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Token {
     public var signout: Signout {
-        Signout(path: path + "/signout/")
+        Signout(path: path + "/signout")
     }
 
     public struct Signout {

@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Token {
     public var update: Update {
-        Update(path: path + "/update/")
+        Update(path: path + "/update")
     }
 
     public struct Update {

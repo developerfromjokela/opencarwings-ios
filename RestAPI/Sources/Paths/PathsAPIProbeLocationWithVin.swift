@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Probe.Location {
     public func vin(_ vin: String) -> WithVin {
-        WithVin(path: "\(path)/\(vin)/")
+        WithVin(path: "\(path)/\(vin)")
     }
 
     public struct WithVin {

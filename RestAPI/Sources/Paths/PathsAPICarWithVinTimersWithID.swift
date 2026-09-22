@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Car.WithVin.Timers {
     public func id(_ id: String) -> WithID {
-        WithID(path: "\(path)/\(id)")
+        WithID(path: "\(path)\(id)")
     }
 
     public struct WithID {

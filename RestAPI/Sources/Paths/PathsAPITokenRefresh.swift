@@ -6,7 +6,7 @@ import Get
 
 extension Paths.API.Token {
     public var refresh: Refresh {
-        Refresh(path: path + "/refresh/")
+        Refresh(path: path + "/refresh")
     }
 
     public struct Refresh {
